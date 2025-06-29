@@ -1,6 +1,18 @@
 // Vercel无服务器函数 - 使用CommonJS语法
 const https = require('https');
 
+// 动态prompt配置（与本地server.js保持一致）
+const DYNAMIC_PROMPT_CONFIG = {
+    basePrompt: `请根据以下文本内容，创建一个HTML网页来呈现这段话。要求：
+1. 设计美观，现代简约风格
+2. 如果需要的话，添加纯色图标来增强视觉效果，不要使用彩色图标`,
+    systemRole: "你是一个专业的网页设计师，擅长将文本内容转换为美观的HTML网页。",
+    imagePrompt: `
+3. 在网页中使用图片，图片URL: {imageUrl}
+4. 网页的比例是16:9，画出页面边框`,
+    endPrompt: `. 请直接返回完整的HTML代码，从<!DOCTYPE html>开始，不要添加任何解释文字或markdown格式`
+};
+
 // 发送HTTP请求的辅助函数
 function makeRequest(url, options, data) {
     return new Promise((resolve, reject) => {
@@ -64,8 +76,8 @@ async function generateImage(description) {
     }
 }
 
-// 生成文本
-async function generateText(systemRole, userPrompt) {
+// 生成文本（使用动态prompt配置）
+async function generateText(userText, imageUrl = null) {
     const config = getAzureConfig();
     const url = new URL(`${config.endpoint}/openai/deployments/${config.deployment}/chat/completions?api-version=${config.apiVersion}`);
     
@@ -76,16 +88,30 @@ async function generateText(systemRole, userPrompt) {
             'api-key': config.key
         }
     };
-    
+
+    // 使用动态prompt配置构建prompt
+    let prompt = DYNAMIC_PROMPT_CONFIG.basePrompt;
+
+    if (imageUrl) {
+        prompt += DYNAMIC_PROMPT_CONFIG.imagePrompt.replace('{imageUrl}', imageUrl);
+    }
+
+    prompt += `
+${imageUrl ? '4' : '3'}${DYNAMIC_PROMPT_CONFIG.endPrompt}
+
+文本内容：${userText}`;
+
+    console.log('使用的prompt:', prompt);
+
     const data = {
         messages: [
-            { role: "system", content: systemRole },
-            { role: "user", content: userPrompt }
+            { role: "system", content: DYNAMIC_PROMPT_CONFIG.systemRole },
+            { role: "user", content: prompt }
         ],
         max_tokens: 4000,
         temperature: 0.7
     };
-    
+
     try {
         const response = await makeRequest(url, options, data);
         return response.choices[0].message.content;
@@ -93,6 +119,32 @@ async function generateText(systemRole, userPrompt) {
         console.error('文本生成失败:', error.message);
         throw error;
     }
+}
+
+// 清理HTML响应，移除markdown格式和多余文字（与本地server.js保持一致）
+function cleanHTMLResponse(response) {
+    // 移除可能的markdown代码块标记
+    let cleaned = response.replace(/```html\s*/g, '').replace(/```\s*$/g, '');
+    
+    // 查找第一个<!DOCTYPE html>的位置
+    const doctypeIndex = cleaned.indexOf('<!DOCTYPE html>');
+    if (doctypeIndex !== -1) {
+        cleaned = cleaned.substring(doctypeIndex);
+    } else {
+        // 如果没有找到<!DOCTYPE html>，查找<html>
+        const htmlIndex = cleaned.indexOf('<html');
+        if (htmlIndex !== -1) {
+            cleaned = cleaned.substring(htmlIndex);
+        }
+    }
+    
+    // 查找最后一个</html>的位置
+    const lastHtmlIndex = cleaned.lastIndexOf('</html>');
+    if (lastHtmlIndex !== -1) {
+        cleaned = cleaned.substring(0, lastHtmlIndex + 7); // 7 是 '</html>' 的长度
+    }
+    
+    return cleaned.trim();
 }
 
 // Vercel API端点 - 主函数
@@ -150,66 +202,31 @@ module.exports = async function handler(req, res) {
 
         // 判断是否需要图片
         const withImage = imageOption === 'yes';
+        let imageUrl = null;
 
-        // 系统角色
-        const systemRole = language === 'zh' 
-            ? `你是一个专业的PPT页面设计师。用户会给你一段文字描述，你需要将其转换为一个美观的、现代化的PPT页面的HTML代码。
-
-要求：
-1. 生成完整的HTML页面，包含<!DOCTYPE html>标签
-2. 使用现代化、简洁的设计风格
-3. 确保在1920x1080分辨率下完美显示
-4. 包含合适的字体、颜色搭配和布局
-5. 添加适当的CSS动画和过渡效果
-6. 确保内容层次清晰，重点突出
-7. 使用响应式设计
-8. 如果用户要求配图，请在合适位置添加<img>标签，src属性设为"IMAGE_PLACEHOLDER"
-
-请直接返回完整的HTML代码，不要有任何其他解释文字。`
-            : `You are a professional PPT page designer. Users will give you a text description, and you need to convert it into beautiful, modern PPT page HTML code.
-
-Requirements:
-1. Generate complete HTML page including <!DOCTYPE html> tag
-2. Use modern, clean design style
-3. Ensure perfect display at 1920x1080 resolution
-4. Include appropriate fonts, color schemes and layouts
-5. Add appropriate CSS animations and transitions
-6. Ensure clear content hierarchy with highlighted key points
-7. Use responsive design
-8. If user requests images, add <img> tags in appropriate positions with src="IMAGE_PLACEHOLDER"
-
-Please return the complete HTML code directly without any other explanatory text.`;
-
-        // 用户提示
-        const userPrompt = withImage 
-            ? `${text}\n\n请为这个内容生成一个包含配图的PPT页面，在合适的位置添加图片。图片风格要求：${imageStyle || '现代简洁'}。`
-            : `${text}\n\n请为这个内容生成一个纯文字的PPT页面。`;
+        // 如果需要图片，生成配图
+        if (withImage) {
+            console.log('开始生成配图...');
+            const imageDescription = language === 'zh'
+                ? `为以下内容生成一张配图：${text}。图片应该是高质量、专业的，符合商务或教育场景。风格：${imageStyle || '现代简洁'}。`
+                : `Generate an illustration for the following content: ${text}. The image should be high-quality, professional, suitable for business or educational scenarios. Style: ${imageStyle || 'modern and clean'}.`;
+            
+            imageUrl = await generateImage(imageDescription);
+            
+            if (imageUrl) {
+                console.log('配图生成成功');
+            } else {
+                console.log('配图生成失败，继续生成纯文字版本');
+            }
+        }
 
         console.log('开始生成HTML内容...');
 
-        // 生成HTML
-        const htmlContent = await generateText(systemRole, userPrompt);
+        // 使用动态prompt生成HTML
+        const htmlContent = await generateText(text, imageUrl);
 
-        let finalHtml = htmlContent;
-
-        // 如果需要图片，生成并替换
-        if (withImage && finalHtml.includes('IMAGE_PLACEHOLDER')) {
-            console.log('开始生成配图...');
-            const imageDescription = language === 'zh'
-                ? `为以下PPT内容生成一张配图：${text}。图片应该是高质量、专业的，符合商务或教育场景。风格：${imageStyle || '现代简洁'}。`
-                : `Generate an illustration for the following PPT content: ${text}. The image should be high-quality, professional, suitable for business or educational scenarios. Style: ${imageStyle || 'modern and clean'}.`;
-            
-            const imageUrl = await generateImage(imageDescription);
-            
-            if (imageUrl) {
-                finalHtml = finalHtml.replace(/IMAGE_PLACEHOLDER/g, imageUrl);
-                console.log('配图生成成功');
-            } else {
-                // 如果图片生成失败，移除img标签
-                finalHtml = finalHtml.replace(/<img[^>]*src="IMAGE_PLACEHOLDER"[^>]*>/g, '');
-                console.log('配图生成失败，移除图片标签');
-            }
-        }
+        // 清理HTML响应
+        const finalHtml = cleanHTMLResponse(htmlContent);
 
         console.log('PPT页面生成完成');
         res.status(200).json({ 
