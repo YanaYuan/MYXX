@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试Taskbar布局</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0 0 90px 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .content {
+            padding: 50px;
+            color: white;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+        
+        .description {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>测试PPT页面</h1>
+        <div class="description">
+            这是一个测试页面，用于验证底部taskbar的布局。
+            现在taskbar中央显示的是AI Powered PPT Studio品牌标识，不再有下载按钮。
+        </div>
+        <p>页面内容区域...</p>
+        <p>更多内容...</p>
+        <p>滚动测试内容...</p>
+        <p>确保taskbar不会覆盖主要内容...</p>
+    </div>
+
+    <!-- TextCraft Studio Taskbar -->
+    <div id="textcraft-taskbar" style="
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        background: linear-gradient(135deg, rgba(5, 5, 15, 0.98), rgba(15, 15, 25, 0.98));
+        backdrop-filter: blur(25px);
+        border-top: 2px solid rgba(0, 212, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        font-family: 'Segoe UI', 'SF Pro Display', 'Roboto', sans-serif;
+        box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4), 0 -2px 10px rgba(0, 212, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+    ">
+        <!-- 背景动效 -->
+        <div style="
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            animation: scan 4s infinite ease-in-out;
+        "></div>
+        
+        <!-- 品牌标识 -->
+        <div style="
+            position: absolute;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(0, 212, 255, 0.9);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            z-index: 1;
+        ">
+            <div style="
+                width: 24px;
+                height: 24px;
+                background: linear-gradient(135deg, #00d4ff, #ff00aa);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                animation: rotate 8s linear infinite;
+                box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+            ">✨</div>
+            <span>TextCraft Studio</span>
+        </div>
+        
+        <!-- 中央品牌展示区域 -->
+        <div style="
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: rgba(0, 212, 255, 0.9);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        ">
+            <div style="
+                width: 28px;
+                height: 28px;
+                background: linear-gradient(135deg, #00d4ff, #ff00aa);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                animation: rotate 8s linear infinite;
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            ">✨</div>
+            <span style="text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);">AI Powered PPT Studio</span>
+        </div>
+        
+        <!-- 状态指示器 -->
+        <div style="
+            position: absolute;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(0, 255, 136, 0.8);
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 1;
+        ">
+            <div style="
+                width: 8px;
+                height: 8px;
+                background: #00ff88;
+                border-radius: 50%;
+                animation: pulse 2s infinite;
+                box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+            "></div>
+            <span>PPT Ready</span>
+        </div>
+    </div>
+
+    <style>
+        @keyframes scan {
+            0% { left: -100%; }
+            50% { left: 0%; }
+            100% { left: 100%; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+            50% { 
+                opacity: 0.6; 
+                transform: scale(1.2); 
+            }
+        }
+    </style>
+
+    <script>
+        // 移除下载功能，仅保留品牌展示
+        console.log('TextCraft Studio - AI Powered PPT Studio');
+    </script>
+</body>
+</html>

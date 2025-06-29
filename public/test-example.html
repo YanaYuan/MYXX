@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软件开发流程</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f7;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #1d1d1f;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .content {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .diagram-container {
+            margin: 30px auto;
+            text-align: center;
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .diagram-container h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 软件开发流程</h1>
+        
+        <div class="content">
+            软件开发的基本流程包括需求分析、系统设计、编码实现、测试验证和部署上线。每个阶段都有明确的输入输出和质量检查点。
+        </div>
+        
+        <div class="diagram-container">
+            <h3>软件开发流程图</h3>
+            <div class="mermaid">
+flowchart TD
+    A[需求分析] --> B[系统设计]
+    B --> C[编码实现] 
+    C --> D[测试验证]
+    D --> E[部署上线]
+    A --> A1[输入需求]
+    A1 --> A2[质量检查]
+    B --> B1[设计文档]
+    B1 --> B2[设计评审]
+    C --> C1[代码编写]
+    C1 --> C2[代码审查]
+    D --> D1[测试用例]
+    D1 --> D2[测试报告]
+    E --> E1[生产部署]
+    E1 --> E2[监控验证]
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: { 
+                useMaxWidth: true, 
+                htmlLabels: true 
+            }
+        });
+    </script>
+</body>
+</html>

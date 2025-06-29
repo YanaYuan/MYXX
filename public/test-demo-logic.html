@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Case Logic Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        .btn {
+            background: linear-gradient(135deg, #00d4ff, #ff00aa);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.5);
+        }
+        .test-area {
+            background: rgba(0, 20, 40, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .status.active { background: rgba(0, 255, 136, 0.2); }
+        .status.inactive { background: rgba(255, 136, 0, 0.2); }
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 30, 60, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            padding: 15px;
+            font-family: inherit;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Demo Case Logic Test</h1>
+        <p>测试不同demo case的默认配图选择</p>
+        
+        <div class="test-area">
+            <h3>📝 内容输入区</h3>
+            <textarea id="textInput" placeholder="Demo内容将在这里显示..."></textarea>
+            
+            <h3>🖼️ 配图选项</h3>
+            <div class="form-group">
+                <label>
+                    <input type="radio" name="imageOption" value="no" checked> 
+                    📝 纯文字模式
+                </label>
+                <br><br>
+                <label>
+                    <input type="radio" name="imageOption" value="yes"> 
+                    🎨 智能配图模式
+                </label>
+            </div>
+            
+            <div id="statusDisplay">
+                <div class="status" id="statusText">当前状态：待测试</div>
+                <div class="status" id="modeStatus">配图模式：待选择</div>
+            </div>
+        </div>
+        
+        <div class="test-area">
+            <h3>🎯 测试按钮</h3>
+            <button class="btn" onclick="testEVDemo()">🚗 测试电车Demo (应该选择纯文字)</button>
+            <button class="btn" onclick="testPalaceDemo()">🏛️ 测试故宫Demo (应该选择智能配图)</button>
+            <button class="btn" onclick="resetToDefault()">🔄 重置为默认状态</button>
+        </div>
+    </div>
+
+    <script>
+        // 复制主要的demo函数逻辑
+        function fillContentHelper(textInput, content, cnMessage, enMessage, useAIImage = false) {
+            console.log('执行fillContentHelper, useAIImage:', useAIImage);
+            textInput.value = content;
+            
+            // 根据参数选择配图模式
+            if (useAIImage) {
+                // 选择AI配图选项
+                const imageOption = document.querySelector('input[name="imageOption"][value="yes"]');
+                if (imageOption) {
+                    imageOption.checked = true;
+                    updateStatus('AI配图模式已激活', '智能配图模式');
+                }
+            } else {
+                // 选择纯文字模式
+                const noImageOption = document.querySelector('input[name="imageOption"][value="no"]');
+                if (noImageOption) {
+                    noImageOption.checked = true;
+                    updateStatus('纯文字模式已激活', '纯文字模式');
+                }
+            }
+            
+            textInput.focus();
+        }
+
+        function testEVDemo() {
+            console.log('测试电车Demo');
+            const textInput = document.getElementById('textInput');
+            
+            const demoContent = `电动汽车技术方案
+主要围绕"四电系统"展开：
+动力电池采用高能量密度锂离子电池组，搭配智能BMS管理系统实现精准充放电控制；
+驱动系统集成高效永磁同步电机，配合多档变速器提升能效；
+电控系统通过域控制器实现整车能量管理，支持V2G车网互动技术。
+智电系统采用人工智能技术，跟用户对话实现智能控制`;
+
+            // 电车demo使用纯文字模式
+            fillContentHelper(textInput, demoContent, '电动汽车技术方案已加载！', 'EV tech solution loaded!', false);
+        }
+
+        function testPalaceDemo() {
+            console.log('测试故宫Demo');
+            const textInput = document.getElementById('textInput');
+            
+            const demoContent = `介绍故宫`;
+            // 故宫demo使用智能配图模式
+            fillContentHelper(textInput, demoContent, '故宫介绍内容已加载！', 'Palace Museum content loaded!', true);
+        }
+
+        function resetToDefault() {
+            const textInput = document.getElementById('textInput');
+            textInput.value = '';
+            
+            const noImageOption = document.querySelector('input[name="imageOption"][value="no"]');
+            if (noImageOption) {
+                noImageOption.checked = true;
+            }
+            
+            updateStatus('已重置为默认状态', '纯文字模式（默认）');
+        }
+
+        function updateStatus(statusText, modeText) {
+            document.getElementById('statusText').textContent = '当前状态：' + statusText;
+            document.getElementById('modeStatus').textContent = '配图模式：' + modeText;
+            
+            // 更新状态样式
+            const statusDiv = document.getElementById('statusText');
+            const modeDiv = document.getElementById('modeStatus');
+            
+            statusDiv.className = 'status active';
+            modeDiv.className = 'status active';
+            
+            setTimeout(() => {
+                statusDiv.className = 'status inactive';
+                modeDiv.className = 'status inactive';
+            }, 2000);
+        }
+
+        // 监听配图选项变化
+        document.querySelectorAll('input[name="imageOption"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const mode = this.value === 'yes' ? '智能配图模式' : '纯文字模式';
+                updateStatus('用户手动切换配图选项', mode);
+            });
+        });
+
+        // 页面加载时显示默认状态
+        window.addEventListener('load', function() {
+            updateStatus('页面已加载', '纯文字模式（默认）');
+        });
+    </script>
+</body>
+</html>

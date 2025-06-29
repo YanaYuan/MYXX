@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Progress Bar Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .test-container {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00d4ff, #ff00aa);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        /* 科幻风格加载层 */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(5, 5, 15, 0.95), rgba(15, 15, 25, 0.95));
+            backdrop-filter: blur(15px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        /* 科幻背景网格动画 */
+        .loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-flow 20s linear infinite;
+            opacity: 0.2;
+        }
+
+        @keyframes grid-flow {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* 主加载容器 - NO BACKGROUND */
+        .loading-container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: transparent;
+            backdrop-filter: none;
+        }
+
+        /* 科幻风格进度条容器 */
+        .progress-container {
+            margin: 30px 0;
+            position: relative;
+            width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 0 20px rgba(0, 212, 255, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #00d4ff 0%, 
+                #ff00aa 50%, 
+                #00d4ff 100%);
+            background-size: 200% 100%;
+            border-radius: 20px;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: progress-glow 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes progress-glow {
+            0%, 100% { 
+                background-position: 0% 50%;
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            }
+            50% { 
+                background-position: 100% 50%;
+                box-shadow: 0 0 30px rgba(255, 0, 170, 0.6);
+            }
+        }
+
+        /* 进度条闪光效果 */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+            animation: progress-shine 3s ease-in-out infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* 进度百分比显示 */
+        .progress-percentage {
+            position: absolute;
+            top: -35px;
+            left: 0;
+            color: #00d4ff;
+            font-size: 18px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 状态文本 */
+        .status-text {
+            color: #00d4ff;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+            animation: text-pulse 2s ease-in-out infinite;
+        }
+
+        .sub-status {
+            color: rgba(0, 212, 255, 0.8);
+            font-size: 16px;
+            text-align: center;
+            margin: 10px 0;
+            opacity: 0.9;
+            animation: text-fade 3s ease-in-out infinite;
+        }
+
+        @keyframes text-pulse {
+            0%, 100% { 
+                opacity: 0.8; 
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes text-fade {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* 粒子效果 */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00d4ff;
+            border-radius: 50%;
+            animation: particle-float 8s linear infinite;
+            box-shadow: 0 0 6px #00d4ff;
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚀 Clean Progress Bar Test</h1>
+        <p>测试无圆环的科幻风格进度条</p>
+        
+        <button class="btn" onclick="startDemo()">🎯 Start Demo (English)</button>
+        <button class="btn" onclick="startDemoCN()">🎯 开始演示 (中文)</button>
+        <button class="btn" onclick="stopDemo()">❌ Stop Demo</button>
+    </div>
+
+    <!-- 加载动画 - NO SPINNER -->
+    <div class="loading" id="loadingDiv">
+        <div class="loading-container">
+            <!-- 进度条区域 -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+            </div>
+            
+            <!-- 状态文本 -->
+            <div class="status-text" id="statusText">⚡ Initializing Neural Processors...</div>
+            <div class="sub-status" id="subStatus">Preparing quantum algorithms for content analysis</div>
+            
+            <!-- 粒子效果背景 -->
+            <div class="particles" id="particles"></div>
+        </div>
+    </div>
+
+    <script>
+        let progressInterval;
+        let currentProgress = 0;
+        
+        const loadingStagesEN = [
+            { progress: 15, status: "🧠 Neural Network Initialization", subStatus: "Loading AI models and quantum processors..." },
+            { progress: 30, status: "📝 Content Analysis Phase", subStatus: "Parsing input data with advanced NLP algorithms..." },
+            { progress: 50, status: "🎨 Creative Engine Activation", subStatus: "Generating design patterns and visual layouts..." },
+            { progress: 70, status: "🖼️ Image Synthesis Module", subStatus: "Creating high-quality visual assets..." },
+            { progress: 85, status: "⚡ Final Assembly Process", subStatus: "Compiling PPT components with quantum optimization..." },
+            { progress: 95, status: "🚀 Quality Assurance Check", subStatus: "Validating output with AI quality metrics..." },
+            { progress: 100, status: "✅ Generation Complete", subStatus: "Your stunning PPT page is ready!" }
+        ];
+
+        const loadingStagesCN = [
+            { progress: 15, status: "🧠 神经网络初始化中", subStatus: "加载AI模型和量子处理器..." },
+            { progress: 30, status: "📝 内容分析阶段", subStatus: "使用先进NLP算法解析输入数据..." },
+            { progress: 50, status: "🎨 创意引擎激活", subStatus: "生成设计模式和视觉布局..." },
+            { progress: 70, status: "🖼️ 图像合成模块", subStatus: "创建高质量视觉资源..." },
+            { progress: 85, status: "⚡ 最终装配处理", subStatus: "量子优化编译PPT组件..." },
+            { progress: 95, status: "🚀 质量保证检查", subStatus: "使用AI质量指标验证输出..." },
+            { progress: 100, status: "✅ 生成完成", subStatus: "您精美的PPT页面已准备就绪！" }
+        ];
+
+        function startDemo() {
+            showLoading(true, loadingStagesEN);
+        }
+
+        function startDemoCN() {
+            showLoading(true, loadingStagesCN);
+        }
+
+        function stopDemo() {
+            showLoading(false);
+        }
+
+        function showLoading(isLoading, stages = loadingStagesEN) {
+            const loadingDiv = document.getElementById('loadingDiv');
+            
+            if (isLoading) {
+                loadingDiv.classList.add('show');
+                startLoadingProgress(stages);
+                createParticles();
+            } else {
+                loadingDiv.classList.remove('show');
+                clearParticles();
+            }
+        }
+
+        function startLoadingProgress(loadingStages) {
+            currentProgress = 0;
+            let stageIndex = 0;
+            
+            const progressFill = document.getElementById('progressFill');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const statusText = document.getElementById('statusText');
+            const subStatus = document.getElementById('subStatus');
+            
+            // 初始状态
+            if (progressFill) progressFill.style.width = '0%';
+            if (progressPercentage) progressPercentage.textContent = '0%';
+            if (statusText) statusText.textContent = loadingStages[0].status;
+            if (subStatus) subStatus.textContent = loadingStages[0].subStatus;
+            
+            progressInterval = setInterval(() => {
+                // 随机增长速度，模拟真实处理过程
+                const increment = Math.random() * 3 + 0.5;
+                currentProgress = Math.min(currentProgress + increment, 100);
+                
+                // 更新进度条
+                if (progressFill) {
+                    progressFill.style.width = currentProgress + '%';
+                }
+                if (progressPercentage) {
+                    progressPercentage.textContent = Math.floor(currentProgress) + '%';
+                    progressPercentage.style.left = `calc(${currentProgress}% - 20px)`;
+                }
+                
+                // 更新状态文本
+                const currentStage = loadingStages[stageIndex];
+                if (currentProgress >= currentStage.progress && stageIndex < loadingStages.length - 1) {
+                    stageIndex++;
+                    if (statusText) statusText.textContent = loadingStages[stageIndex].status;
+                    if (subStatus) subStatus.textContent = loadingStages[stageIndex].subStatus;
+                }
+                
+                // 达到100%时停止
+                if (currentProgress >= 100) {
+                    clearInterval(progressInterval);
+                    if (statusText) statusText.textContent = loadingStages[loadingStages.length - 1].status;
+                    if (subStatus) subStatus.textContent = loadingStages[loadingStages.length - 1].subStatus;
+                    
+                    // 3秒后自动关闭
+                    setTimeout(() => {
+                        showLoading(false);
+                    }, 3000);
+                }
+            }, 150); // 每150ms更新一次
+        }
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+            
+            // 清理现有粒子
+            particlesContainer.innerHTML = '';
+            
+            // 创建粒子
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 8 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                    
+                    // 随机颜色
+                    const colors = ['#00d4ff', '#ff00aa', '#00ff88', '#ffaa00'];
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.boxShadow = `0 0 6px ${particle.style.background}`;
+                    
+                    particlesContainer.appendChild(particle);
+                }, i * 200);
+            }
+        }
+
+        function clearParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (particlesContainer) {
+                particlesContainer.innerHTML = '';
+            }
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+        }
+    </script>
+</body>
+</html>

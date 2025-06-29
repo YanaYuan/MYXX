@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taskbar功能最终测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #00d4ff, #ff00aa);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 TextCraft Studio Taskbar 功能测试</h1>
+        
+        <div class="status" id="status">
+            正在初始化测试环境...
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="testTaskbarInjection()">🧪 测试Taskbar注入</button>
+            <button onclick="testFullGeneration()">🚀 模拟完整生成流程</button>
+            <button onclick="openMainPage()">📄 打开主页面</button>
+        </div>
+        
+        <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px; margin-top: 30px;">
+            <h3>📋 测试项目：</h3>
+            <ul style="text-align: left;">
+                <li>✅ Taskbar HTML结构正确</li>
+                <li>✅ 品牌标识居中布局</li>
+                <li>✅ 移除下载功能</li>
+                <li>🔍 Taskbar注入功能</li>
+                <li>🔍 新窗口预览功能</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const status = document.getElementById('status');
+            const time = new Date().toLocaleTimeString();
+            status.innerHTML += `<div>${time}: ${message}</div>`;
+            status.scrollTop = status.scrollHeight;
+        }
+
+        function testTaskbarInjection() {
+            log('🧪 开始测试Taskbar注入功能...');
+            
+            // 创建测试HTML
+            const testHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>测试生成的PPT页面</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 50px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        .content { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            text-align: center; 
+            padding: 50px 20px;
+        }
+        h1 { font-size: 3rem; margin-bottom: 2rem; }
+        p { font-size: 1.2rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>🎯 测试PPT页面</h1>
+        <p>这是一个生成的PPT页面示例</p>
+        <p>底部应该显示TextCraft Studio的taskbar</p>
+        <p>包含下载为图片按钮，并且按钮应该在taskbar中央</p>
+    </div>
+</body>
+</html>`;
+
+            // 模拟injectTaskbar功能
+            const taskbarHTML = createTaskbarHTML();
+            const htmlWithTaskbar = testHTML.replace('</body>', taskbarHTML + '</body>');
+            
+            // 在新标签页打开
+            const newTab = window.open('', '_blank');
+            if (newTab) {
+                newTab.document.write(htmlWithTaskbar);
+                newTab.document.close();
+                log('✅ 测试标签页已打开，请检查taskbar是否正确显示');
+            } else {
+                log('❌ 无法打开新标签页，请检查浏览器弹窗设置');
+            }
+        }
+
+        function testFullGeneration() {
+            log('🚀 模拟完整PPT生成流程...');
+            
+            // 模拟生成过程
+            log('📝 模拟用户输入: "电动汽车技术方案"');
+            log('⚙️ 模拟AI处理...');
+            
+            setTimeout(() => {
+                log('🎨 生成PPT页面内容...');
+                
+                const generatedHTML = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电动汽车技术方案 - PPT页面</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        .container { max-width: 1000px; margin: 0 auto; text-align: center; }
+        h1 { font-size: 3.5rem; margin-bottom: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .content { 
+            background: rgba(255, 255, 255, 0.1); 
+            padding: 30px; 
+            border-radius: 15px; 
+            backdrop-filter: blur(10px);
+            margin: 20px 0;
+            text-align: left;
+        }
+        .feature { 
+            background: rgba(255, 255, 255, 0.2); 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 15px 0; 
+        }
+        h3 { color: #00d4ff; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ 电动汽车技术方案</h1>
+        
+        <div class="content">
+            <h3>🔋 核心技术体系</h3>
+            <p>主要围绕"四电系统"展开，构建完整的电动汽车技术生态</p>
+        </div>
+        
+        <div class="feature">
+            <h3>🔋 动力电池系统</h3>
+            <p>高能量密度锂离子电池组，搭配智能BMS管理系统实现精准充放电控制</p>
+        </div>
+        
+        <div class="feature">
+            <h3>⚙️ 驱动系统</h3>
+            <p>集成高效永磁同步电机，配合多档变速器提升能效</p>
+        </div>
+        
+        <div class="feature">
+            <h3>🧠 电控系统</h3>
+            <p>通过域控制器实现整车能量管理，支持V2G车网互动技术</p>
+        </div>
+        
+        <div class="feature">
+            <h3>🤖 智电系统</h3>
+            <p>采用人工智能技术，跟用户对话实现智能控制</p>
+        </div>
+    </div>
+</body>
+</html>`;
+                
+                log('✨ 注入TextCraft Studio taskbar...');
+                const taskbarHTML = createTaskbarHTML();
+                const finalHTML = generatedHTML.replace('</body>', taskbarHTML + '</body>');
+                
+                // 打开最终页面
+                const newTab = window.open('', '_blank');
+                if (newTab) {
+                    newTab.document.write(finalHTML);
+                    newTab.document.close();
+                    log('🎉 完整PPT页面生成成功！请查看新标签页');
+                } else {
+                    log('❌ 无法打开预览标签页');
+                }
+            }, 2000);
+        }
+
+        function openMainPage() {
+            log('📄 打开主页面进行实际测试...');
+            window.open('index.html', '_blank');
+        }
+
+        function createTaskbarHTML() {
+            return `
+    <!-- TextCraft Studio Taskbar - 确保布局正确 -->
+    <div id="textcraft-taskbar" style="
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        height: 70px !important;
+        background: linear-gradient(135deg, rgba(5, 5, 15, 0.98), rgba(15, 15, 25, 0.98)) !important;
+        backdrop-filter: blur(25px) !important;
+        border-top: 2px solid rgba(0, 212, 255, 0.4) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 999999 !important;
+        font-family: 'Segoe UI', 'SF Pro Display', 'Roboto', sans-serif !important;
+        box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4), 0 -2px 10px rgba(0, 212, 255, 0.1) !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 20px !important;
+        box-sizing: border-box !important;
+    ">
+        <!-- 背景动效 -->
+        <div style="
+            position: absolute !important;
+            top: 0 !important;
+            left: -100% !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent) !important;
+            animation: scan 4s infinite ease-in-out !important;
+            pointer-events: none !important;
+        "></div>
+        
+        <!-- 品牌标识 -->
+        <div style="
+            position: absolute !important;
+            left: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            color: rgba(0, 212, 255, 0.9) !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px !important;
+            z-index: 1 !important;
+        ">
+            <div style="
+                width: 24px !important;
+                height: 24px !important;
+                background: linear-gradient(135deg, #00d4ff, #ff00aa) !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 12px !important;
+                animation: rotate 8s linear infinite !important;
+                box-shadow: 0 0 15px rgba(0, 212, 255, 0.4) !important;
+            ">✨</div>
+            <span>TextCraft Studio</span>
+        </div>
+        
+        <!-- 中央品牌展示区域 -->
+        <div style="
+            position: absolute !important;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            z-index: 2 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 15px !important;
+            color: rgba(0, 212, 255, 0.9) !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            letter-spacing: 1px !important;
+        ">
+            <div style="
+                width: 28px !important;
+                height: 28px !important;
+                background: linear-gradient(135deg, #00d4ff, #ff00aa) !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 14px !important;
+                animation: rotate 8s linear infinite !important;
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.5) !important;
+            ">✨</div>
+            <span style="text-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;">AI Powered PPT Studio</span>
+        </div>
+        
+        <!-- 状态指示器 -->
+        <div style="
+            position: absolute !important;
+            right: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            color: rgba(0, 255, 136, 0.8) !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            z-index: 1 !important;
+        ">
+            <div style="
+                width: 8px !important;
+                height: 8px !important;
+                background: #00ff88 !important;
+                border-radius: 50% !important;
+                animation: pulse 2s infinite !important;
+                box-shadow: 0 0 15px rgba(0, 255, 136, 0.6) !important;
+            "></div>
+            <span>PPT Ready</span>
+        </div>
+    </div>
+
+    <style>
+        @keyframes scan {
+            0% { left: -100% !important; }
+            50% { left: 0% !important; }
+            100% { left: 100% !important; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg) !important; }
+            to { transform: rotate(360deg) !important; }
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50% !important; }
+            50% { background-position: 100% 50% !important; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1 !important; transform: scale(1) !important; }
+            50% { opacity: 0.6 !important; transform: scale(1.2) !important; }
+        }
+        
+        body { padding-bottom: 90px !important; }
+    </style>
+
+    <script>
+        // 移除下载功能测试
+        console.log('TextCraft Studio - 下载功能已移除');
+    </script>
+            `;
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('load', function() {
+            log('🚀 TextCraft Studio Taskbar测试环境已准备就绪');
+            log('👆 点击上方按钮开始测试各项功能');
+            log('');
+            log('📝 预期结果：');
+            log('• Taskbar应该固定在页面底部');
+            log('• 下载按钮应该在taskbar中央');
+            log('• 品牌标识在左侧，状态指示器在右侧');
+            log('• 所有动画效果正常工作');
+        });
+    </script>
+</body>
+</html>

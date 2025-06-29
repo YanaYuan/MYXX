@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt调试工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+
+        .config-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .test-section {
+            padding: 30px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            line-height: 1.5;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+
+        .textarea-small {
+            min-height: 100px;
+        }
+
+        .textarea-medium {
+            min-height: 200px;
+        }
+
+        .textarea-large {
+            min-height: 300px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            box-shadow: 0 8px 16px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            box-shadow: 0 8px 16px rgba(40, 167, 69, 0.3);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .test-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .test-input {
+            margin-bottom: 15px;
+        }
+
+        .test-input input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .test-input input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+
+        .preview-area {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 8px 12px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .config-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Prompt调试工具</h1>
+            <p>实时修改和测试AI提示词，提升网页生成效果</p>
+        </div>
+
+        <div class="main-content">
+            <div class="config-section">
+                <h3 style="margin-bottom: 20px; color: #333;">📝 Prompt配置</h3>
+                
+                <div class="quick-presets">
+                    <button class="preset-btn" onclick="loadPreset('default')">默认配置</button>
+                    <button class="preset-btn" onclick="loadPreset('detailed')">详细模式</button>
+                    <button class="preset-btn" onclick="loadPreset('minimal')">简约模式</button>
+                    <button class="preset-btn" onclick="loadPreset('creative')">创意模式</button>
+                    <button class="preset-btn" onclick="saveCustomPreset()">💾 保存当前为自定义</button>
+                    <button class="preset-btn" onclick="loadCustomPreset()">📂 加载自定义</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="systemRole">系统角色 (System Role):</label>
+                    <textarea id="systemRole" class="textarea-small" placeholder="定义AI的角色和行为..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="basePrompt">基础提示词 (Base Prompt):</label>
+                    <textarea id="basePrompt" class="textarea-large" placeholder="核心的网页生成指令..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="imagePrompt">图片提示词 (Image Prompt):</label>
+                    <textarea id="imagePrompt" class="textarea-medium" placeholder="包含图片时的额外指令..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="endPrompt">结束提示词 (End Prompt):</label>
+                    <textarea id="endPrompt" class="textarea-small" placeholder="最终的格式要求..."></textarea>
+                </div>
+
+                <div class="actions">
+                    <button class="btn" onclick="updatePromptConfig()">💾 保存配置</button>
+                    <button class="btn btn-secondary" onclick="loadCurrentConfig()">🔄 重新加载</button>
+                    <button class="btn btn-secondary" onclick="resetConfig()">🔥 重置为默认</button>
+                    <button class="btn btn-secondary" onclick="exportConfig()">📤 导出配置</button>
+                    <input type="file" id="importInput" accept=".json" style="display: none;" onchange="importConfig(event)">
+                    <button class="btn btn-secondary" onclick="document.getElementById('importInput').click()">📥 导入配置</button>
+                </div>
+
+                <div id="configStatus"></div>
+            </div>
+
+            <div class="test-section">
+                <h3 style="margin-bottom: 20px; color: #333;">🧪 实时测试</h3>
+                
+                <div class="test-input">
+                    <label for="testText">测试文本:</label>
+                    <input type="text" id="testText" placeholder="输入要测试的文本内容..." value="欢迎来到我的个人博客，这里分享编程心得和生活感悟。">
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-success" onclick="previewPrompt()">👁️ 预览完整Prompt</button>
+                    <button class="btn" onclick="testGeneration()">🚀 测试生成</button>
+                    <button class="btn btn-secondary" onclick="analyzeTextAndSuggest()">🎯 智能推荐配置</button>
+                </div>
+
+                <div id="testStatus"></div>
+
+                <div class="form-group">
+                    <label>完整Prompt预览:</label>
+                    <div id="promptPreview" class="preview-area">点击"预览完整Prompt"查看...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 预设配置
+        const presets = {
+            default: {
+                systemRole: "你是一个专业的网页设计师，擅长将文本内容转换为美观的HTML网页。",
+                basePrompt: `请根据以下文本内容，创建一个HTML网页来呈现这段话。要求：
+1. 设计美观，现代简约风格
+2. 如果需要的话，添加纯色图标来增强视觉效果，不要使用彩色图标`,
+                imagePrompt: `
+3. 在网页中使用图片，图片URL: {imageUrl}
+4. 网页的比例是16:9，画出页面边框`,
+                endPrompt: `. 请直接返回完整的HTML代码，从<!DOCTYPE html>开始，不要添加任何解释文字或markdown格式`
+            },
+            detailed: {
+                systemRole: "你是一个资深的前端开发工程师和UI/UX设计师，精通HTML5、CSS3和现代网页设计趋势。你能创造出既美观又实用的网页。",
+                basePrompt: `请根据以下文本内容，创建一个精美的HTML网页。具体要求：
+1. 使用现代化的设计语言，采用卡片式布局
+2. 配色方案要和谐，使用渐变背景或纯色背景
+3. 文字排版要有层次感，合理使用标题、副标题、正文
+4. 添加适当的间距和留白，提升视觉体验
+5. 使用CSS3动画和过渡效果增强交互感
+6. 响应式设计，适配不同屏幕尺寸
+7. 添加纯色图标(Font Awesome或Unicode符号)来增强视觉效果`,
+                imagePrompt: `
+8. 优雅地集成提供的图片，图片URL: {imageUrl}
+9. 图片要有圆角、阴影等现代化效果
+10. 整体网页比例为16:9，适合大屏展示`,
+                endPrompt: `. 返回完整的HTML代码，包含所有CSS样式，确保可以直接在浏览器中运行。不要添加任何markdown格式或解释文字。`
+            },
+            minimal: {
+                systemRole: "你是一个简约主义设计师，擅长创建干净、简洁但不失美感的网页。",
+                basePrompt: `创建一个极简风格的HTML网页：
+1. 大量留白，简洁布局
+2. 黑白或单色配色方案
+3. 简单的几何形状和线条`,
+                imagePrompt: `
+4. 图片以简约方式展示: {imageUrl}`,
+                endPrompt: `. 返回纯HTML代码，无需解释。`
+            },
+            creative: {
+                systemRole: "你是一个充满创意的数字艺术家，善于将文字转化为富有艺术感和创意的视觉作品。",
+                basePrompt: `为以下文本创建一个富有创意和艺术感的网页：
+1. 大胆的色彩搭配和视觉元素
+2. 创新的布局设计，打破传统格局
+3. 使用CSS动画和特效创造动态效果
+4. 艺术化的字体和排版
+5. 独特的视觉层次和空间感`,
+                imagePrompt: `
+6. 创意性地融入图片: {imageUrl}
+7. 为图片添加艺术滤镜或效果`,
+                endPrompt: `. 创造一个令人印象深刻的艺术化网页，返回完整HTML代码。`
+            }
+        };
+
+        // 页面加载时获取当前配置
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentConfig();
+        });
+
+        // 加载预设配置
+        function loadPreset(presetName) {
+            const preset = presets[presetName];
+            if (preset) {
+                document.getElementById('systemRole').value = preset.systemRole;
+                document.getElementById('basePrompt').value = preset.basePrompt;
+                document.getElementById('imagePrompt').value = preset.imagePrompt;
+                document.getElementById('endPrompt').value = preset.endPrompt;
+                
+                showStatus('configStatus', `已加载${presetName}预设配置`, 'info');
+            }
+        }
+
+        // 加载当前服务器配置
+        async function loadCurrentConfig() {
+            try {
+                const response = await fetch('/api/debug/get-prompt');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const config = data.config;
+                    document.getElementById('systemRole').value = config.systemRole;
+                    document.getElementById('basePrompt').value = config.basePrompt;
+                    document.getElementById('imagePrompt').value = config.imagePrompt;
+                    document.getElementById('endPrompt').value = config.endPrompt;
+                    
+                    showStatus('configStatus', '✅ 已加载当前服务器配置', 'success');
+                }
+            } catch (error) {
+                showStatus('configStatus', '❌ 加载配置失败: ' + error.message, 'error');
+            }
+        }
+
+        // 更新服务器配置
+        async function updatePromptConfig() {
+            const config = {
+                systemRole: document.getElementById('systemRole').value,
+                basePrompt: document.getElementById('basePrompt').value,
+                imagePrompt: document.getElementById('imagePrompt').value,
+                endPrompt: document.getElementById('endPrompt').value
+            };
+
+            try {
+                const response = await fetch('/api/debug/update-prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('configStatus', '✅ 配置已保存到服务器', 'success');
+                } else {
+                    throw new Error(data.error || '更新失败');
+                }
+            } catch (error) {
+                showStatus('configStatus', '❌ 保存失败: ' + error.message, 'error');
+            }
+        }
+
+        // 重置配置
+        async function resetConfig() {
+            try {
+                const response = await fetch('/api/debug/reset-prompt', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadCurrentConfig();
+                    showStatus('configStatus', '✅ 已重置为默认配置', 'success');
+                }
+            } catch (error) {
+                showStatus('configStatus', '❌ 重置失败: ' + error.message, 'error');
+            }
+        }
+
+        // 预览完整Prompt
+        function previewPrompt() {
+            const testText = document.getElementById('testText').value || '测试文本内容';
+            const systemRole = document.getElementById('systemRole').value;
+            const basePrompt = document.getElementById('basePrompt').value;
+            const imagePrompt = document.getElementById('imagePrompt').value;
+            const endPrompt = document.getElementById('endPrompt').value;
+
+            // 模拟生成完整prompt
+            let fullPrompt = basePrompt;
+            
+            // 假设包含图片
+            const hasImage = true;
+            if (hasImage) {
+                fullPrompt += imagePrompt.replace('{imageUrl}', 'https://example.com/image.jpg');
+            }
+            
+            const stepNumber = hasImage ? '4' : '3';
+            fullPrompt += `\n${stepNumber}${endPrompt}\n\n文本内容：${testText}`;
+
+            const previewContent = `=== 系统角色 ===\n${systemRole}\n\n=== 用户提示词 ===\n${fullPrompt}`;
+            
+            document.getElementById('promptPreview').textContent = previewContent;
+            showStatus('testStatus', '📋 Prompt预览已生成', 'info');
+        }
+
+        // 测试生成网页
+        async function testGeneration() {
+            const testText = document.getElementById('testText').value;
+            
+            if (!testText.trim()) {
+                showStatus('testStatus', '❌ 请输入测试文本', 'error');
+                return;
+            }
+
+            showStatus('testStatus', '🔄 正在测试生成...', 'info');
+
+            try {
+                const response = await fetch('/api/generate-webpage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: testText,
+                        imageOption: 'no' // 快速测试，不生成图片
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('testStatus', '✅ 生成成功！网页已创建', 'success');
+                    
+                    // 在新窗口中打开生成的网页
+                    const newWindow = window.open();
+                    newWindow.document.write(data.html);
+                    newWindow.document.close();
+                } else {
+                    throw new Error(data.error || '生成失败');
+                }
+            } catch (error) {
+                showStatus('testStatus', '❌ 测试失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示状态消息
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+            
+            // 3秒后清除消息
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 3000);
+        }
+
+        // 快捷键支持
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        updatePromptConfig();
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        testGeneration();
+                        break;
+                    case 'p':
+                        e.preventDefault();
+                        previewPrompt();
+                        break;
+                }
+            }
+        });
+
+        // 保存自定义预设
+        function saveCustomPreset() {
+            const config = {
+                systemRole: document.getElementById('systemRole').value,
+                basePrompt: document.getElementById('basePrompt').value,
+                imagePrompt: document.getElementById('imagePrompt').value,
+                endPrompt: document.getElementById('endPrompt').value
+            };
+            
+            localStorage.setItem('customPromptPreset', JSON.stringify(config));
+            showStatus('configStatus', '✅ 自定义预设已保存到本地', 'success');
+        }
+
+        // 加载自定义预设
+        function loadCustomPreset() {
+            const saved = localStorage.getItem('customPromptPreset');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    document.getElementById('systemRole').value = config.systemRole || '';
+                    document.getElementById('basePrompt').value = config.basePrompt || '';
+                    document.getElementById('imagePrompt').value = config.imagePrompt || '';
+                    document.getElementById('endPrompt').value = config.endPrompt || '';
+                    
+                    showStatus('configStatus', '✅ 已加载自定义预设', 'success');
+                } catch (error) {
+                    showStatus('configStatus', '❌ 自定义预设格式错误', 'error');
+                }
+            } else {
+                showStatus('configStatus', '⚠️ 没有保存的自定义预设', 'error');
+            }
+        }
+
+        // 导出配置
+        function exportConfig() {
+            const config = {
+                systemRole: document.getElementById('systemRole').value,
+                basePrompt: document.getElementById('basePrompt').value,
+                imagePrompt: document.getElementById('imagePrompt').value,
+                endPrompt: document.getElementById('endPrompt').value,
+                exportTime: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prompt-config-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('configStatus', '✅ 配置已导出到文件', 'success');
+        }
+
+        // 导入配置
+        function importConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    
+                    if (config.systemRole !== undefined) document.getElementById('systemRole').value = config.systemRole;
+                    if (config.basePrompt !== undefined) document.getElementById('basePrompt').value = config.basePrompt;
+                    if (config.imagePrompt !== undefined) document.getElementById('imagePrompt').value = config.imagePrompt;
+                    if (config.endPrompt !== undefined) document.getElementById('endPrompt').value = config.endPrompt;
+                    
+                    showStatus('configStatus', '✅ 配置已从文件导入', 'success');
+                } catch (error) {
+                    showStatus('configStatus', '❌ 配置文件格式错误', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 智能分析文本并推荐配置
+        function analyzeTextAndSuggest() {
+            const testText = document.getElementById('testText').value;
+            if (!testText.trim()) {
+                showStatus('testStatus', '❌ 请先输入测试文本', 'error');
+                return;
+            }
+            
+            // 简单的文本分析逻辑
+            let suggestedPreset = 'default';
+            
+            if (testText.includes('产品') || testText.includes('服务') || testText.includes('公司')) {
+                suggestedPreset = 'detailed';
+            } else if (testText.includes('诗') || testText.includes('艺术') || testText.includes('创意')) {
+                suggestedPreset = 'creative';
+            } else if (testText.length < 100) {
+                suggestedPreset = 'minimal';
+            }
+            
+            loadPreset(suggestedPreset);
+            showStatus('testStatus', `🎯 根据文本内容推荐使用 "${suggestedPreset}" 预设`, 'info');
+        }
+    </script>
+</body>
+</html>

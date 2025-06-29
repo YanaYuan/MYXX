@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试新窗口预览功能</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-area {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #00d4ff, #ff00aa);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 新窗口预览功能测试</h1>
+        
+        <div class="test-area">
+            <h3>🧪 功能测试步骤：</h3>
+            <ol>
+                <li>点击"模拟生成PPT"按钮 - 模拟生成HTML内容</li>
+                <li>点击"新窗口预览"按钮 - 测试预览功能</li>
+                <li>检查是否在新标签页中正确显示内容</li>
+            </ol>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="simulateGeneration()">📝 模拟生成PPT</button>
+                <button onclick="openInNewWindow()">🚀 新窗口预览</button>
+                <button onclick="clearLog()">🧹 清空日志</button>
+            </div>
+        </div>
+        
+        <div class="log" id="log">
+            <div>测试环境准备就绪...</div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>${time}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '<div>日志已清空...</div>';
+        }
+
+        function simulateGeneration() {
+            log('🔄 开始模拟PPT生成...');
+            
+            // 模拟生成的HTML内容
+            const mockHTML = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟生成的PPT页面</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 50px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        .content { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            text-align: center; 
+        }
+        h1 { 
+            font-size: 3.5rem; 
+            margin-bottom: 2rem; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .feature { 
+            background: rgba(255, 255, 255, 0.15); 
+            padding: 25px; 
+            border-radius: 15px; 
+            margin: 20px 0; 
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>🎯 测试PPT页面</h1>
+        
+        <div class="feature">
+            <h3>✅ 新窗口预览功能测试成功</h3>
+            <p>此页面是通过openInNewWindow()函数打开的</p>
+            <p>时间: ${new Date().toLocaleString()}</p>
+        </div>
+        
+        <div class="feature">
+            <h3>📋 测试结果</h3>
+            <p>如果您能看到这个页面，说明新窗口预览功能正常工作</p>
+        </div>
+        
+        <div class="feature">
+            <h3>🎉 功能特点</h3>
+            <ul style="text-align: left;">
+                <li>✅ 在新标签页打开</li>
+                <li>✅ 显示纯净PPT内容</li>
+                <li>✅ 无taskbar覆盖</li>
+                <li>✅ 保持完整页面布局</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>`;
+
+            // 保存到全局变量（模拟生成成功后的操作）
+            window.generatedHTML = mockHTML;
+            
+            log('✅ PPT内容生成成功');
+            log('📊 HTML长度: ' + mockHTML.length + ' 字符');
+            log('💾 内容已保存到 window.generatedHTML');
+            log('🚀 现在可以点击"新窗口预览"按钮测试');
+        }
+
+        // 新窗口预览功能（与主页面相同的实现）
+        function openInNewWindow() {
+            log('🚀 尝试在新窗口打开PPT页面');
+            
+            if (!window.generatedHTML) {
+                log('❌ 没有可打开的HTML内容');
+                showToast('没有可预览的PPT页面，请先点击"模拟生成PPT"', 'error');
+                return;
+            }
+
+            try {
+                // 直接使用保存的HTML内容，无taskbar
+                const finalHTML = window.generatedHTML;
+                
+                log('📄 准备打开新标签页...');
+                
+                // 在新标签页打开
+                const newTab = window.open('', '_blank');
+                
+                if (newTab) {
+                    // 写入HTML内容
+                    newTab.document.write(finalHTML);
+                    newTab.document.close();
+                    
+                    log('✅ PPT页面已在新标签页打开');
+                    showToast('PPT页面已在新标签页打开', 'success');
+                } else {
+                    log('❌ 无法打开新标签页');
+                    showToast('无法打开新标签页，请检查浏览器弹窗设置', 'error');
+                }
+            } catch (error) {
+                log('❌ 打开新窗口失败: ' + error.message);
+                showToast('打开预览失败，请重试', 'error');
+            }
+        }
+
+        // 简单的Toast提示功能
+        function showToast(message, type = 'info') {
+            log('💬 显示提示: ' + message);
+            
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 9999;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+            `;
+            
+            const icon = type === 'success' ? '✅' : '❌';
+            toast.innerHTML = `${icon} ${message}`;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('load', function() {
+            log('🎮 测试环境初始化完成');
+            log('📝 首先点击"模拟生成PPT"来准备测试数据');
+        });
+    </script>
+</body>
+</html>

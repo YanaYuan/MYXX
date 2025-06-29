@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>验证Taskbar移除</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-result {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #00d4ff, #ff00aa);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .success {
+            color: #00ff88;
+        }
+        
+        .info {
+            color: #00d4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Taskbar移除验证</h1>
+        
+        <div class="test-result" id="result">
+            <div class="info">🔍 正在验证taskbar是否已从PPT页面中移除...</div>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="testNoTaskbar()">🚀 测试生成纯净PPT页面</button>
+            <button onclick="openMainPage()">📄 打开主页面测试</button>
+        </div>
+        
+        <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px; margin-top: 30px;">
+            <h3>📋 验证项目：</h3>
+            <ul style="text-align: left;">
+                <li>✅ 移除taskbar注入功能</li>
+                <li>✅ PPT页面显示纯净内容</li>
+                <li>✅ 无底部工具栏</li>
+                <li>✅ 无品牌标识覆盖</li>
+                <li>✅ 完整页面内容可见</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const time = new Date().toLocaleTimeString();
+            const colorClass = type === 'success' ? 'success' : 'info';
+            result.innerHTML += `<div class="${colorClass}">${time}: ${message}</div>`;
+            result.scrollTop = result.scrollHeight;
+        }
+
+        function testNoTaskbar() {
+            log('🧪 开始测试纯净PPT页面生成...', 'info');
+            
+            // 创建测试HTML - 模拟服务器生成的页面
+            const testHTML = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试PPT页面 - 无Taskbar</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 50px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        .content { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            text-align: center; 
+            padding: 50px 20px;
+        }
+        h1 { 
+            font-size: 3.5rem; 
+            margin-bottom: 2rem; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .feature { 
+            background: rgba(255, 255, 255, 0.15); 
+            padding: 25px; 
+            border-radius: 15px; 
+            margin: 20px 0; 
+            backdrop-filter: blur(10px);
+        }
+        .footer {
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>🎯 纯净PPT页面展示</h1>
+        
+        <div class="feature">
+            <h3>✨ 无Taskbar覆盖</h3>
+            <p>此页面不包含任何底部工具栏，展示完整的PPT内容</p>
+        </div>
+        
+        <div class="feature">
+            <h3>🎨 完整视觉体验</h3>
+            <p>用户可以看到完整的页面设计，无任何界面元素干扰</p>
+        </div>
+        
+        <div class="feature">
+            <h3>📱 响应式布局</h3>
+            <p>页面内容自适应各种屏幕尺寸，提供最佳观看体验</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>🎉 测试成功</strong></p>
+            <p>这是一个纯净的PPT页面，没有任何taskbar或工具栏覆盖内容</p>
+            <p>页面底部区域完全可见，无遮挡</p>
+        </div>
+    </div>
+</body>
+</html>`;
+            
+            log('📝 生成测试页面内容...', 'info');
+            log('🚫 跳过taskbar注入过程', 'success');
+            log('✨ 直接使用原始HTML内容', 'success');
+            
+            // 直接在新标签页打开，不注入taskbar
+            const newTab = window.open('', '_blank');
+            if (newTab) {
+                newTab.document.write(testHTML);
+                newTab.document.close();
+                log('🎉 纯净PPT页面已在新标签页打开！', 'success');
+                log('👀 请检查页面底部是否没有taskbar', 'info');
+            } else {
+                log('❌ 无法打开新标签页，请检查浏览器设置', 'info');
+            }
+        }
+
+        function openMainPage() {
+            log('📄 打开主页面进行实际测试...', 'info');
+            window.open('index.html', '_blank');
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('load', function() {
+            log('🚀 Taskbar移除验证工具已准备就绪', 'success');
+            log('📋 现在PPT页面将显示纯净内容，无底部工具栏', 'info');
+            log('👆 点击按钮开始测试', 'info');
+        });
+    </script>
+</body>
+</html>

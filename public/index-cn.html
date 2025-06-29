@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美页秀秀 - AI智能PPT页面生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', '微软雅黑', 'Segoe UI', sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 科幻背景动画 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.1) 0%, transparent 50%);
+            z-index: -2;
+        }
+
+        /* 动态网格背景 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(120, 119, 198, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(120, 119, 198, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+            animation: glow-line 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow-line {
+            0% { opacity: 0.5; transform: translateX(-50%) scaleX(0.5); }
+            100% { opacity: 1; transform: translateX(-50%) scaleX(1); }
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            font-weight: 300;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #00d4ff, #ff00aa, #00ff88);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 4s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #a0a0ff;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .debug-link {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(255, 0, 170, 0.2));
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            color: #00d4ff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .debug-link:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(255, 0, 170, 0.3));
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .form-card {
+            background: rgba(15, 15, 30, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            animation: scan 3s infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #00d4ff;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 20px;
+            background: rgba(5, 5, 15, 0.8);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            color: #ffffff;
+            font-size: 16px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', '微软雅黑', monospace;
+            resize: vertical;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 
+                0 0 20px rgba(0, 212, 255, 0.3),
+                inset 0 0 20px rgba(0, 212, 255, 0.1);
+            background: rgba(5, 5, 15, 0.9);
+        }
+
+        textarea::placeholder {
+            color: rgba(160, 160, 255, 0.6);
+            font-style: italic;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00d4ff, #ff00aa);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 16px;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.5);
+            background: linear-gradient(135deg, #ff00aa, #00d4ff);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(5, 5, 15, 0.95), rgba(15, 15, 25, 0.95));
+            backdrop-filter: blur(15px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        /* 科幻背景网格动画 */
+        .loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-flow 20s linear infinite;
+            opacity: 0.2;
+        }
+
+        @keyframes grid-flow {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* 主加载容器 */
+        .loading-container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: transparent;
+            backdrop-filter: none;
+        }
+
+        /* 科幻风格进度条容器 */
+        .progress-container {
+            margin: 30px 0;
+            position: relative;
+            width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 0 20px rgba(0, 212, 255, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #00d4ff 0%, 
+                #ff00aa 50%, 
+                #00d4ff 100%);
+            background-size: 200% 100%;
+            border-radius: 20px;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: progress-glow 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes progress-glow {
+            0%, 100% { 
+                background-position: 0% 50%;
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            }
+            50% { 
+                background-position: 100% 50%;
+                box-shadow: 0 0 30px rgba(255, 0, 170, 0.6);
+            }
+        }
+
+        /* 进度条闪光效果 */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+            animation: progress-shine 3s ease-in-out infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* 进度百分比显示 */
+        .progress-percentage {
+            position: absolute;
+            top: -35px;
+            left: 0;
+            color: #00d4ff;
+            font-size: 18px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 更新后的spinner */
+        .loading .spinner {
+            border: 4px solid rgba(0, 212, 255, 0.2);
+            border-top: 4px solid #00d4ff;
+            border-right: 4px solid #ff00aa;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: quantum-spin 1.5s linear infinite;
+            margin-bottom: 40px;
+            box-shadow: 
+                0 0 40px rgba(0, 212, 255, 0.6),
+                inset 0 0 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        @keyframes quantum-spin {
+            0% { 
+                transform: rotate(0deg) scale(1);
+                box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
+            }
+            50% { 
+                transform: rotate(180deg) scale(1.1);
+                box-shadow: 0 0 60px rgba(255, 0, 170, 0.8);
+            }
+            100% { 
+                transform: rotate(360deg) scale(1);
+                box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
+            }
+        }
+
+        /* 状态文本 */
+        .loading .status-text {
+            color: #00d4ff;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+            animation: text-pulse 2s ease-in-out infinite;
+        }
+
+        .loading .sub-status {
+            color: rgba(0, 212, 255, 0.8);
+            font-size: 16px;
+            text-align: center;
+            margin: 10px 0;
+            opacity: 0.9;
+            animation: text-fade 3s ease-in-out infinite;
+        }
+
+        @keyframes text-pulse {
+            0%, 100% { 
+                opacity: 0.8; 
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes text-fade {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* 粒子效果容器 */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00d4ff;
+            border-radius: 50%;
+            animation: particle-float 8s linear infinite;
+            box-shadow: 0 0 6px #00d4ff;
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .result-actions {
+            display: none;
+            margin-top: 25px;
+            padding: 25px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-actions::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: success-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes success-glow {
+            0%, 100% { opacity: 0.5; transform: scaleX(0.5); }
+            50% { opacity: 1; transform: scaleX(1); }
+        }
+
+        .result-actions.show {
+            display: block;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .result-actions h3 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            letter-spacing: 1px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            color: #0a0a0f;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 130px;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+        }
+
+        .btn-action.secondary {
+            background: linear-gradient(135deg, rgba(255, 0, 170, 0.8), rgba(0, 212, 255, 0.8));
+            color: white;
+        }
+
+        .btn-action.secondary:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.8), rgba(255, 0, 170, 0.8));
+            box-shadow: 0 8px 20px rgba(255, 0, 170, 0.4);
+        }
+
+        /* 配图选项样式 */
+        .image-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(5, 5, 15, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radio-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: all 0.3s ease;
+        }
+        
+        .radio-option:hover::before {
+            left: 100%;
+        }
+        
+        .radio-option:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+        
+        .radio-option input[type="radio"]:checked + .radio-custom {
+            background: #00d4ff;
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        }
+        
+        .radio-option input[type="radio"]:checked + .radio-custom::after {
+            opacity: 1;
+        }
+        
+        .radio-option input[type="radio"]:checked ~ .option-text {
+            color: #00d4ff;
+        }
+
+        .radio-option input[type="radio"]:checked {
+            + .radio-custom + .option-text strong {
+                color: #00d4ff;
+                text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            }
+        }
+        
+        .radio-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50%;
+            margin-right: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .radio-custom::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .option-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+        
+        .option-text strong {
+            font-size: 15px;
+            margin-bottom: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .option-text small {
+            font-size: 12px;
+            color: rgba(160, 160, 255, 0.8);
+        }
+
+        /* 图片风格选择样式 */
+        .style-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .style-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 6px;
+            background: rgba(5, 5, 15, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 11px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .style-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .style-option:hover::before {
+            opacity: 1;
+        }
+
+        .style-option:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .style-option input[type="radio"] {
+            display: none;
+        }
+        
+        .style-option input[type="radio"]:checked + .style-preview {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+            transform: scale(1.1);
+        }
+        
+        .style-option input[type="radio"]:checked ~ .style-text {
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        
+        .style-preview {
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .style-preview.realistic {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: inset 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .style-preview.illustration {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            box-shadow: inset 0 0 10px rgba(240, 147, 251, 0.3);
+        }
+        
+        .style-preview.minimalist {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            box-shadow: inset 0 0 10px rgba(79, 172, 254, 0.3);
+        }
+        
+        .style-preview.cartoon {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            box-shadow: inset 0 0 10px rgba(67, 233, 123, 0.3);
+        }
+        
+        .style-preview.watercolor {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            box-shadow: inset 0 0 10px rgba(250, 112, 154, 0.3);
+        }
+        
+        .style-preview.cyberpunk {
+            background: linear-gradient(135deg, #ff00aa, #00d4ff);
+            box-shadow: inset 0 0 10px rgba(255, 0, 170, 0.3);
+        }
+        
+        .style-text {
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #ffffff;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .style-text strong {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .style-text small {
+            color: rgba(160, 160, 255, 0.8);
+            font-size: 8px;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+                padding-bottom: 60px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .header p {
+                font-size: 0.9em;
+            }
+            
+            .form-card {
+                padding: 20px;
+            }
+            
+            .style-options {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            textarea {
+                min-height: 120px;
+                padding: 16px;
+                font-size: 15px;
+            }
+            
+            .btn {
+                padding: 14px 30px;
+                font-size: 15px;
+            }
+            
+            .radio-option {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+            
+            .style-option {
+                padding: 8px 4px;
+            }
+            
+            .style-preview {
+                width: 30px;
+                height: 30px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .header p {
+                font-size: 0.85em;
+            }
+            
+            .form-card {
+                padding: 16px;
+            }
+            
+            .style-options {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn-action {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            textarea {
+                min-height: 100px;
+                padding: 14px;
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 14px;
+            }
+            
+            .footer-tools {
+                padding: 8px 12px;
+            }
+            
+            .footer-tools a {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+        }
+
+        /* 底部工具栏样式 */
+        .footer-tools {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(5, 5, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+            padding: 12px 20px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .footer-tools a {
+            display: inline-block;
+            color: rgba(160, 160, 255, 0.6);
+            text-decoration: none;
+            font-size: 11px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .footer-tools a:hover {
+            color: #00d4ff;
+            border-color: rgba(0, 212, 255, 0.3);
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>美页秀秀</h1>
+            <p>运用先进AI技术，将文本内容转化为精美的PPT页面</p>
+        </div>
+
+        <div class="main-content">
+            <div class="form-card">
+                <form id="textForm">
+                <div class="form-group">
+                    <label for="textInput">文本内容输入</label>
+                    <textarea 
+                        id="textInput" 
+                        name="text" 
+                        placeholder="选择下方样例体验，或输入您自己的内容..."
+                        required
+                    ></textarea>
+                    
+                    <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" onclick="fillDemoContentEV()" style="background: rgba(0, 212, 255, 0.1); color: #00d4ff; border: 1px solid rgba(0, 212, 255, 0.3); padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: all 0.3s ease; min-width: 100px;">
+                            ✨ 样例：电动汽车技术
+                        </button>
+                        <button type="button" onclick="fillDemoContentPalace()" style="background: rgba(255, 0, 170, 0.1); color: #ff00aa; border: 1px solid rgba(255, 0, 170, 0.3); padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: all 0.3s ease; min-width: 100px;">
+                            ✨ 样例：故宫介绍
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="imageOption">配图选项</label>
+                    <div class="image-options">
+                        <label class="radio-option">
+                            <input type="radio" name="imageOption" value="no" checked>
+                            <span class="radio-custom"></span>
+                            <span class="option-text">
+                                <strong>📝 纯文字模式</strong>
+                                <small>专注内容展示，无配图生成</small>
+                            </span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="imageOption" value="yes">
+                            <span class="radio-custom"></span>
+                            <span class="option-text">
+                                <strong>🎨 智能配图模式</strong>
+                                <small>使用DALL-E 3生成精美配图</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="styleOptions" style="display: none;">
+                    <label for="imageStyle">图片风格选择</label>
+                    <div class="style-options">
+                        <label class="style-option">
+                            <input type="radio" name="imageStyle" value="realistic" checked>
+                            <span class="style-preview realistic"></span>
+                            <span class="style-text">
+                                <strong>📸 写实风格</strong>
+                                <small>真实感强，细节丰富</small>
+                            </span>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="imageStyle" value="illustration">
+                            <span class="style-preview illustration"></span>
+                            <span class="style-text">
+                                <strong>🎨 插画风格</strong>
+                                <small>艺术感强，色彩丰富</small>
+                            </span>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="imageStyle" value="minimalist">
+                            <span class="style-preview minimalist"></span>
+                            <span class="style-text">
+                                <strong>🔸 简约风格</strong>
+                                <small>简洁清爽，现代感强</small>
+                            </span>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="imageStyle" value="cartoon">
+                            <span class="style-preview cartoon"></span>
+                            <span class="style-text">
+                                <strong>🎭 卡通风格</strong>
+                                <small>生动有趣，亲和力强</small>
+                            </span>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="imageStyle" value="watercolor">
+                            <span class="style-preview watercolor"></span>
+                            <span class="style-text">
+                                <strong>🎨 水彩风格</strong>
+                                <small>柔和唯美，艺术感强</small>
+                            </span>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="imageStyle" value="cyberpunk">
+                            <span class="style-preview cyberpunk"></span>
+                            <span class="style-text">
+                                <strong>🌆 赛博朋克</strong>
+                                <small>未来感强，色彩鲜明</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn" id="generateBtn">
+                    🚀 开始生成PPT页面
+                </button>
+            </form>
+
+            <!-- 生成结果操作区域 -->
+            <div class="result-actions" id="resultActions">
+                <h3>✅ PPT页面生成成功！</h3>
+                <div class="action-buttons">
+                    <button type="button" class="btn-action" onclick="openInNewWindow()">
+                        🌐 新窗口预览
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载动画 -->
+    <div class="loading" id="loadingDiv">
+        <div class="loading-container">
+            <!-- 进度条区域 -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+            </div>
+            
+            <!-- 状态文本 -->
+            <div class="status-text" id="statusText">⚡ 正在初始化神经网络...</div>
+            <div class="sub-status" id="subStatus">加载AI模型和量子处理器...</div>
+            
+            <!-- 粒子效果背景 -->
+            <div class="particles" id="particles"></div>
+        </div>
+    </div>
+
+    <!-- 底部工具栏 -->
+    <div class="footer-tools">
+        <a href="simple-debug.html" target="_blank">🔧 调试控制台</a>
+        <a href="index.html">🌍 English</a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
