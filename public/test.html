@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        .result {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+        .error {
+            background: #4a1a1a;
+            border-left: 4px solid #ff4444;
+        }
+        .success {
+            background: #1a4a1a;
+            border-left: 4px solid #44ff44;
+        }
+    </style>
+</head>
+<body>
+    <h1>TextCraft Studio API测试</h1>
+    
+    <button onclick="testAPI()">测试基础API</button>
+    <button onclick="testGenerateAPI()">测试生成API</button>
+    <button onclick="clearResults()">清空结果</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function addResult(content, isError = false) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${isError ? 'error' : 'success'}`;
+            div.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+            results.appendChild(div);
+        }
+
+        async function testAPI() {
+            try {
+                addResult('开始测试基础API...');
+                const response = await fetch('/api/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                addResult('基础API响应: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                addResult('基础API错误: ' + error.message, true);
+            }
+        }
+
+        async function testGenerateAPI() {
+            try {
+                addResult('开始测试生成API...');
+                const testData = {
+                    text: '这是一个测试文本，用于验证API是否正常工作。',
+                    imageOption: 'no',
+                    imageStyle: 'realistic'
+                };
+                
+                const response = await fetch('/api/generate-webpage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                addResult('生成API响应状态: ' + response.status);
+                addResult('生成API响应: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                addResult('生成API错误: ' + error.message, true);
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
