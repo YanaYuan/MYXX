@@ -1,65 +1,102 @@
-const axios = require('axios');
+// Vercel无服务器函数 - 使用CommonJS语法
+const https = require('https');
+
+// 发送HTTP请求的辅助函数
+function makeRequest(url, options, data) {
+    return new Promise((resolve, reject) => {
+        const req = https.request(url, options, (res) => {
+            let responseData = '';
+            res.on('data', (chunk) => {
+                responseData += chunk;
+            });
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(responseData));
+                } catch (error) {
+                    reject(new Error('Invalid JSON response'));
+                }
+            });
+        });
+        
+        req.on('error', reject);
+        
+        if (data) {
+            req.write(JSON.stringify(data));
+        }
+        req.end();
+    });
+}
 
 // Azure OpenAI配置
-const AZURE_CONFIG = {
+const getAzureConfig = () => ({
     endpoint: process.env.AZURE_OPENAI_ENDPOINT,
     key: process.env.AZURE_OPENAI_KEY,
     deployment: process.env.AZURE_OPENAI_DEPLOYMENT,
     apiVersion: process.env.AZURE_OPENAI_API_VERSION
-};
+});
 
 // 生成图片
 async function generateImage(description) {
-    const url = `${AZURE_CONFIG.endpoint}/openai/deployments/dall-e-3/images/generations?api-version=2024-02-01`;
+    const config = getAzureConfig();
+    const url = new URL(`${config.endpoint}/openai/deployments/dall-e-3/images/generations?api-version=2024-02-01`);
+    
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'api-key': config.key
+        }
+    };
+    
+    const data = {
+        prompt: description,
+        size: "1024x1024",
+        quality: "standard",
+        n: 1
+    };
     
     try {
-        const response = await axios.post(url, {
-            prompt: description,
-            size: "1024x1024",
-            quality: "standard",
-            n: 1
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'api-key': AZURE_CONFIG.key
-            }
-        });
-
-        return response.data.data[0].url;
+        const response = await makeRequest(url, options, data);
+        return response.data[0].url;
     } catch (error) {
-        console.error('图片生成失败:', error.response?.data || error.message);
+        console.error('图片生成失败:', error.message);
         return null;
     }
 }
 
 // 生成文本
 async function generateText(systemRole, userPrompt) {
-    const url = `${AZURE_CONFIG.endpoint}/openai/deployments/${AZURE_CONFIG.deployment}/chat/completions?api-version=${AZURE_CONFIG.apiVersion}`;
+    const config = getAzureConfig();
+    const url = new URL(`${config.endpoint}/openai/deployments/${config.deployment}/chat/completions?api-version=${config.apiVersion}`);
+    
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'api-key': config.key
+        }
+    };
+    
+    const data = {
+        messages: [
+            { role: "system", content: systemRole },
+            { role: "user", content: userPrompt }
+        ],
+        max_tokens: 4000,
+        temperature: 0.7
+    };
     
     try {
-        const response = await axios.post(url, {
-            messages: [
-                { role: "system", content: systemRole },
-                { role: "user", content: userPrompt }
-            ],
-            max_tokens: 4000,
-            temperature: 0.7
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'api-key': AZURE_CONFIG.key
-            }
-        });
-
-        return response.data.choices[0].message.content;
+        const response = await makeRequest(url, options, data);
+        return response.choices[0].message.content;
     } catch (error) {
-        console.error('文本生成失败:', error.response?.data || error.message);
+        console.error('文本生成失败:', error.message);
         throw error;
     }
 }
 
-// Vercel API端点
-export default async function handler(req, res) {
+// Vercel API端点 - 主函数
+module.exports = async function handler(req, res) {
     // 设置CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -83,11 +120,19 @@ export default async function handler(req, res) {
         }
 
         // 检查Azure配置
-        if (!AZURE_CONFIG.endpoint || !AZURE_CONFIG.key || !AZURE_CONFIG.deployment) {
+        const config = getAzureConfig();
+        if (!config.endpoint || !config.key || !config.deployment) {
+            console.error('Azure OpenAI配置缺失:', config);
             return res.status(500).json({ error: 'Azure OpenAI configuration missing' });
         }
 
-        console.log('收到生成请求:', { text: text.substring(0, 100) + '...', imageOption, imageStyle, language });
+        console.log('收到生成请求:', { 
+            textLength: text.length, 
+            imageOption, 
+            imageStyle, 
+            language,
+            timestamp: new Date().toISOString()
+        });
 
         // 判断是否需要图片
         const withImage = imageOption === 'yes';
@@ -157,6 +202,10 @@ Please return the complete HTML code directly without any other explanatory text
 
     } catch (error) {
         console.error('API错误:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        res.status(500).json({ 
+            error: 'Internal server error', 
+            details: error.message,
+            timestamp: new Date().toISOString()
+        });
     }
-}
+};
