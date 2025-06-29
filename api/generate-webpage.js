@@ -97,33 +97,47 @@ async function generateText(systemRole, userPrompt) {
 
 // Vercel API端点 - 主函数
 module.exports = async function handler(req, res) {
+    console.log('API调用开始 - 方法:', req.method, '时间:', new Date().toISOString());
+    
     // 设置CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
     if (req.method === 'OPTIONS') {
+        console.log('处理OPTIONS请求');
         res.status(200).end();
         return;
     }
 
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        console.log('方法不允许:', req.method);
+        return res.status(405).json({ success: false, error: 'Method not allowed' });
     }
 
     try {
+        console.log('请求体:', req.body);
+        
         // 从请求体获取参数（兼容现有前端）
         const { text, imageOption, imageStyle, language = 'zh' } = req.body;
 
         if (!text) {
-            return res.status(400).json({ error: 'Text is required' });
+            console.log('缺少text参数');
+            return res.status(400).json({ success: false, error: 'Text is required' });
         }
 
         // 检查Azure配置
         const config = getAzureConfig();
+        console.log('Azure配置检查:', {
+            hasEndpoint: !!config.endpoint,
+            hasKey: !!config.key,
+            hasDeployment: !!config.deployment,
+            hasApiVersion: !!config.apiVersion
+        });
+        
         if (!config.endpoint || !config.key || !config.deployment) {
             console.error('Azure OpenAI配置缺失:', config);
-            return res.status(500).json({ error: 'Azure OpenAI configuration missing' });
+            return res.status(500).json({ success: false, error: 'Azure OpenAI configuration missing' });
         }
 
         console.log('收到生成请求:', { 
@@ -198,11 +212,15 @@ Please return the complete HTML code directly without any other explanatory text
         }
 
         console.log('PPT页面生成完成');
-        res.status(200).json({ html: finalHtml });
+        res.status(200).json({ 
+            success: true,
+            html: finalHtml 
+        });
 
     } catch (error) {
         console.error('API错误:', error);
         res.status(500).json({ 
+            success: false,
             error: 'Internal server error', 
             details: error.message,
             timestamp: new Date().toISOString()
